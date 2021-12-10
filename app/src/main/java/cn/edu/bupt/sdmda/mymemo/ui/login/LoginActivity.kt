@@ -1,6 +1,7 @@
 package cn.edu.bupt.sdmda.mymemo.ui.login
 
 import android.app.Activity
+import android.content.Intent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -12,15 +13,19 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
+import cn.edu.bupt.sdmda.mymemo.MainActivity
+import cn.edu.bupt.sdmda.mymemo.MemoSQLHelper
 import cn.edu.bupt.sdmda.mymemo.databinding.ActivityLoginBinding
 
 import cn.edu.bupt.sdmda.mymemo.R
 
 class LoginActivity : AppCompatActivity() {
-
+    private var sqlHelper: MemoSQLHelper? = null
     private lateinit var loginViewModel: LoginViewModel
 private lateinit var binding: ActivityLoginBinding
-
+    private fun initSQL() {
+        sqlHelper = MemoSQLHelper(this)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -60,7 +65,8 @@ private lateinit var binding: ActivityLoginBinding
                 updateUiWithUser(loginResult.success)
             }
             setResult(Activity.RESULT_OK)
-
+            //跳转到Mainactivity
+            startMainActivity()
             //Complete and destroy login activity once successful
             finish()
         })
@@ -97,7 +103,10 @@ private lateinit var binding: ActivityLoginBinding
             }
         }
     }
-
+    private fun startMainActivity(){
+        var intent = Intent(this,MainActivity::class.java)
+        startActivity(intent)
+    }
     private fun updateUiWithUser(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome)
         val displayName = model.displayName
