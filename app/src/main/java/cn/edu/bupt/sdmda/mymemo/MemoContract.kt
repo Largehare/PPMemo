@@ -31,12 +31,12 @@ class MemoContract {
     class UserTable {
         companion object {
             const val TABLE_NAME = "user"
-            const val COLUMN_NAME_ID = "id"
+            const val COLUMN_NAME_USERID = "userid"
             const val COLUMN_NAME_CREATETIME = "createtime"
             const val COLUMN_NAME_PWD = "password"
             val SQL_CREATE_TABLE = "CREATE TABLE " +
                     "$TABLE_NAME (" +
-                    "$COLUMN_NAME_ID ${TEXT_TYPE} PRIMARY KEY AUTOINCREMENT${COMMA_SEP}" +
+                    "$COLUMN_NAME_USERID ${TEXT_TYPE} PRIMARY KEY AUTOINCREMENT${COMMA_SEP}" +
                     "$COLUMN_NAME_CREATETIME ${TEXT_TYPE}${COMMA_SEP} " +
                     "$COLUMN_NAME_PWD ${TEXT_TYPE}${COMMA_SEP} " +
                     ")"

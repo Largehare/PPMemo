@@ -14,17 +14,17 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
 import cn.edu.bupt.sdmda.mymemo.MainActivity
-import cn.edu.bupt.sdmda.mymemo.MemoSQLHelper
+
 import cn.edu.bupt.sdmda.mymemo.databinding.ActivityLoginBinding
 
 import cn.edu.bupt.sdmda.mymemo.R
 
 class LoginActivity : AppCompatActivity() {
-    private var sqlHelper: MemoSQLHelper? = null
+    private var sqlHelper: UserSQLHelper? = null
     private lateinit var loginViewModel: LoginViewModel
 private lateinit var binding: ActivityLoginBinding
     private fun initSQL() {
-        sqlHelper = MemoSQLHelper(this)
+        sqlHelper = UserSQLHelper(this)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +36,7 @@ private lateinit var binding: ActivityLoginBinding
         val password = binding.password
         val login = binding.login
         val loading = binding.loading
-
+        initSQL()
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
 
@@ -101,6 +101,11 @@ private lateinit var binding: ActivityLoginBinding
                 loading.visibility = View.VISIBLE
                 loginViewModel.login(username.text.toString(), password.text.toString())
             }
+        }
+    }
+    private fun addUser(){
+        sqlHelper.use {
+
         }
     }
     private fun startMainActivity(){
