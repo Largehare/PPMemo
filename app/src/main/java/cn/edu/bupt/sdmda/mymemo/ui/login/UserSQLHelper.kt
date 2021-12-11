@@ -10,9 +10,13 @@ import java.util.HashMap
 
 class UserSQLHelper(ctx: Context) :
     SQLiteOpenHelper(ctx, MemoContract.DATABASE_NAME, null, MemoContract.DATABASE_VERSION) {
+
+
+
     override fun onCreate(db: SQLiteDatabase?) {
         db?.run {
             execSQL(MemoContract.UserTable.SQL_CREATE_TABLE)
+
         }
     }
 
@@ -22,7 +26,7 @@ class UserSQLHelper(ctx: Context) :
             onCreate(this)
         }
     }
-    private fun readSQL(): MutableList<Map<String, Any>> {
+    public fun readSQL(): MutableList<Map<String, Any>> {
         val ret: MutableList<Map<String, Any>> = ArrayList()
         val db: SQLiteDatabase = this.readableDatabase
 
@@ -58,7 +62,7 @@ class UserSQLHelper(ctx: Context) :
         }
         return ret
     }
-    fun addUser(t: String?, c: String?, createtime: Long) {
+    public fun addUser(t: String?, c: String?, createtime: Long) {
         // construct the key-value data to insert into the database
         val values = ContentValues()
         values.put(MemoContract.UserTable.COLUMN_NAME_USERID, t)

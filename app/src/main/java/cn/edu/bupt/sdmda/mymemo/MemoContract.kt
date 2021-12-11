@@ -18,8 +18,8 @@ class MemoContract {
             const val COLUMN_NAME_CONTENT = "content"
             val SQL_CREATE_TABLE = "CREATE TABLE " +
                     "$TABLE_NAME (" +
-                    "$COLUMN_NAME_USERID ${TEXT_TYPE}${COMMA_SEP}"+
                     "$COLUMN_NAME_ID INTEGER PRIMARY KEY AUTOINCREMENT${COMMA_SEP}" +
+                    "$COLUMN_NAME_USERID ${TEXT_TYPE}${COMMA_SEP}"+
                     "$COLUMN_NAME_MODTIME ${TEXT_TYPE}${COMMA_SEP} " +
                     "$COLUMN_NAME_TITLE ${TEXT_TYPE}${COMMA_SEP} " +
                     "$COLUMN_NAME_CONTENT $TEXT_TYPE" +
@@ -36,9 +36,9 @@ class MemoContract {
             const val COLUMN_NAME_PWD = "password"
             val SQL_CREATE_TABLE = "CREATE TABLE " +
                     "$TABLE_NAME (" +
-                    "$COLUMN_NAME_USERID ${TEXT_TYPE} PRIMARY KEY AUTOINCREMENT${COMMA_SEP}" +
+                    "$COLUMN_NAME_USERID ${TEXT_TYPE} PRIMARY KEY${COMMA_SEP}" +
                     "$COLUMN_NAME_CREATETIME ${TEXT_TYPE}${COMMA_SEP} " +
-                    "$COLUMN_NAME_PWD ${TEXT_TYPE}${COMMA_SEP} " +
+                    "$COLUMN_NAME_PWD ${TEXT_TYPE}" +
                     ")"
             const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $TABLE_NAME"
         }

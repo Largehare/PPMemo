@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
 
     private fun initSQL() {
         sqlHelper = MemoSQLHelper(this)
+//        sqlHelper!!.onCreate(sqlHelper!!.readableDatabase)// 程序开启时只会读取已有的表单，如果没有 就需要执行这一段 执行了再注释
     }
 
     private fun initView() {

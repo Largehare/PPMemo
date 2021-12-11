@@ -96,6 +96,7 @@ class MemoAdapter(val ctx: Context, val s: MemoSQLHelper, val l: Int) : BaseAdap
                     tempData[MemoContract.MemoTable.COLUMN_NAME_ID] =
                         c.getInt(c.getColumnIndex(MemoContract.MemoTable.COLUMN_NAME_ID))
                     ret.add(tempData)
+
                 }
             }
         }

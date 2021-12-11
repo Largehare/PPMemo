@@ -9,6 +9,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
@@ -25,6 +26,7 @@ class LoginActivity : AppCompatActivity() {
 private lateinit var binding: ActivityLoginBinding
     private fun initSQL() {
         sqlHelper = UserSQLHelper(this)
+//        sqlHelper!!.onCreate(sqlHelper!!.readableDatabase) //第一次开启软件要创建表单
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,13 +64,26 @@ private lateinit var binding: ActivityLoginBinding
                 showLoginFailed(loginResult.error)
             }
             if (loginResult.success != null) {
-                updateUiWithUser(loginResult.success)
+//                updateUiWithUser(loginResult.success)
             }
-            setResult(Activity.RESULT_OK)
-            //跳转到Mainactivity
-            startMainActivity()
-            //Complete and destroy login activity once successful
-            finish()
+//            //检查数据库
+            var queryR = sqlHelper?.readSQL()
+            var _isMatch = queryR?.run {
+                isMatch(this,username.text.toString(), password.text.toString())
+            }
+            if (_isMatch == true){
+                toMainActivity()
+            }else{
+                var _isRegistered =
+                    queryR?.let { it1 -> addUser(it1,username.text.toString(), password.text.toString()) }
+                if (_isRegistered == true){
+                    showPwdError()
+                }else{
+                    showRegisterSuccess()
+                    toMainActivity()
+                }
+            }
+
         })
 
         username.afterTextChanged {
@@ -103,10 +118,41 @@ private lateinit var binding: ActivityLoginBinding
             }
         }
     }
-    private fun addUser(){
-        sqlHelper.use {
-
+    private fun toMainActivity(){
+        setResult(Activity.RESULT_OK)
+        //跳转到Mainactivity
+        startMainActivity()
+        //Complete and destroy login activity once successful
+        finish()
+    }
+    //数据库中没有该用户就创建
+    private fun addUser(ret: MutableList<Map<String, Any>>,userId:String,userPwd:String): Boolean {
+        val _isRegistered = ret?.run {
+            for(mapItem in this){
+                var _isRegistered = mapItem.containsValue(userId)
+                if (_isRegistered) return@run true
+            }
+            false
         }
+        if (!_isRegistered){
+            val creatTime = System.currentTimeMillis()
+            sqlHelper?.addUser(userId,userPwd,creatTime)
+            return false
+        }else{
+            return true
+        }
+
+    }
+    //判断数据库中是否有该用户和输入框密码与设置密码是否相等
+    private fun isMatch(ret: MutableList<Map<String, Any>>,userId:String,userPwd:String): Boolean {
+        val _isMatch = ret?.run {
+            for(mapItem in this){
+                var _isRegistered = mapItem.containsValue(userId)
+                if (_isRegistered && mapItem.containsValue(userPwd)) return@run true
+            }
+            false
+        }
+        return  _isMatch
     }
     private fun startMainActivity(){
         var intent = Intent(this,MainActivity::class.java)
@@ -122,7 +168,12 @@ private lateinit var binding: ActivityLoginBinding
             Toast.LENGTH_LONG
         ).show()
     }
-
+    private fun showRegisterSuccess(){
+        Toast.makeText(applicationContext, "注册成功", Toast.LENGTH_LONG).show()
+    }
+    private fun showPwdError(){
+        Toast.makeText(applicationContext, "密码错误", Toast.LENGTH_LONG).show()
+    }
     private fun showLoginFailed(@StringRes errorString: Int) {
         Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
     }
