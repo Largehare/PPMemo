@@ -19,6 +19,7 @@ import cn.edu.bupt.sdmda.mymemo.MainActivity
 import cn.edu.bupt.sdmda.mymemo.databinding.ActivityLoginBinding
 
 import cn.edu.bupt.sdmda.mymemo.R
+import java.lang.Exception
 
 class LoginActivity : AppCompatActivity() {
     private var sqlHelper: UserSQLHelper? = null
@@ -26,7 +27,14 @@ class LoginActivity : AppCompatActivity() {
 private lateinit var binding: ActivityLoginBinding
     private fun initSQL() {
         sqlHelper = UserSQLHelper(this)
-//        sqlHelper!!.onCreate(sqlHelper!!.readableDatabase) //第一次开启软件要创建表单
+        try {
+            sqlHelper!!.readableDatabase.query("user",null,null,null,null,null,null)
+        } catch(e:Exception) {
+            sqlHelper!!.onCreate(sqlHelper!!.readableDatabase) //第一次开启软件要创建表单
+            Log.e("helper","table created")
+        }
+
+
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +80,7 @@ private lateinit var binding: ActivityLoginBinding
                 isMatch(this,username.text.toString(), password.text.toString())
             }
             if (_isMatch == true){
-                toMainActivity()
+                startMainActivity(username.text.toString())
             }else{
                 var _isRegistered =
                     queryR?.let { it1 -> addUser(it1,username.text.toString(), password.text.toString()) }
@@ -80,7 +88,8 @@ private lateinit var binding: ActivityLoginBinding
                     showPwdError()
                 }else{
                     showRegisterSuccess()
-                    toMainActivity()
+                    //跳转
+                    startMainActivity(username.text.toString())
                 }
             }
 
@@ -118,13 +127,6 @@ private lateinit var binding: ActivityLoginBinding
             }
         }
     }
-    private fun toMainActivity(){
-        setResult(Activity.RESULT_OK)
-        //跳转到Mainactivity
-        startMainActivity()
-        //Complete and destroy login activity once successful
-        finish()
-    }
     //数据库中没有该用户就创建
     private fun addUser(ret: MutableList<Map<String, Any>>,userId:String,userPwd:String): Boolean {
         val _isRegistered = ret?.run {
@@ -154,9 +156,14 @@ private lateinit var binding: ActivityLoginBinding
         }
         return  _isMatch
     }
-    private fun startMainActivity(){
+    private fun startMainActivity(userId: String){
+        setResult(Activity.RESULT_OK)
+        //跳转到Mainactivity
         var intent = Intent(this,MainActivity::class.java)
+        intent.putExtra("userId",userId)
         startActivity(intent)
+        //Complete and destroy login activity once successful
+        finish()
     }
     private fun updateUiWithUser(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome)

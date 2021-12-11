@@ -40,7 +40,7 @@ class MemoContract {
                     "$COLUMN_NAME_CREATETIME ${TEXT_TYPE}${COMMA_SEP} " +
                     "$COLUMN_NAME_PWD ${TEXT_TYPE}" +
                     ")"
-            const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS $TABLE_NAME"
+            const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${TABLE_NAME}"
         }
 
     }

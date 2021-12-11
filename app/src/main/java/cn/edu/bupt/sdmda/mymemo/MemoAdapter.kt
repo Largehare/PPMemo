@@ -13,7 +13,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MemoAdapter(val ctx: Context, val s: MemoSQLHelper, val l: Int) : BaseAdapter() {
+class MemoAdapter(val ctx: Context, val s: MemoSQLHelper, val l: Int, val userId: String) : BaseAdapter() {
 
     class ViewHolder {
         var vTitle: TextView? = null
@@ -74,12 +74,13 @@ class MemoAdapter(val ctx: Context, val s: MemoSQLHelper, val l: Int) : BaseAdap
         val sortOrder: String = "${MemoContract.MemoTable.COLUMN_NAME_MODTIME} DESC"
         // query and get cursor
         // with can close the resource automatically
+        //query用法介绍：https://blog.csdn.net/scorplopan/article/details/6303559?spm=1001.2101.3001.6650.4&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-4.opensearchhbase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-4.opensearchhbase
         s.readableDatabase.use { d ->
             d.query(
                 MemoContract.MemoTable.TABLE_NAME,
                 projection,
-                null,
-                null,
+                "userid=?",
+                arrayOf("$userId"),
                 null,
                 null,
                 sortOrder
@@ -107,6 +108,7 @@ class MemoAdapter(val ctx: Context, val s: MemoSQLHelper, val l: Int) : BaseAdap
         // construct the key-value data to insert into the database
         val values = ContentValues()
         values.put(MemoContract.MemoTable.COLUMN_NAME_TITLE, t)
+        values.put(MemoContract.MemoTable.COLUMN_NAME_USERID, userId)
         values.put(MemoContract.MemoTable.COLUMN_NAME_CONTENT, c)
         values.put(MemoContract.MemoTable.COLUMN_NAME_MODTIME, modtime)
         // INSERT INTO MemoContract.MemoTable.TABLE_NAME (values.KEYS) VALUES (values.VALUES)

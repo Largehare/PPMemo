@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import cn.edu.bupt.sdmda.mymemo.MemoContract
+import java.lang.Exception
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -15,7 +16,13 @@ class UserSQLHelper(ctx: Context) :
 
     override fun onCreate(db: SQLiteDatabase?) {
         db?.run {
-            execSQL(MemoContract.UserTable.SQL_CREATE_TABLE)
+            try {
+                execSQL(MemoContract.UserTable.SQL_CREATE_TABLE)
+            }catch (e:Exception){
+                execSQL(MemoContract.UserTable.SQL_DELETE_ENTRIES)
+                execSQL(MemoContract.UserTable.SQL_CREATE_TABLE)
+            }
+
 
         }
     }

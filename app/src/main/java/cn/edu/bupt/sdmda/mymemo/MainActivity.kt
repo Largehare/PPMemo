@@ -7,6 +7,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.AdapterView.AdapterContextMenuInfo
 import cn.edu.bupt.sdmda.mymemo.databinding.ActivityMainBinding
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
 
@@ -16,25 +17,30 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
 
     private val requestCodeAdd = 1
     private val requestCodeMod = 2
-
+    private var userId: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding?.root)
-
+        userId = intent.getStringExtra("userId")//从上一个activity获取登录的用户ID
         initSQL()
         initView()
     }
 
     private fun initSQL() {
         sqlHelper = MemoSQLHelper(this)
-//        sqlHelper!!.onCreate(sqlHelper!!.readableDatabase)// 程序开启时只会读取已有的表单，如果没有 就需要执行这一段 执行了再注释
+        try {
+            sqlHelper!!.readableDatabase.query("memo",null,null,null,null,null,null)
+        } catch(e: Exception) {
+            sqlHelper!!.onCreate(sqlHelper!!.readableDatabase) //第一次开启软件要创建表单
+        }
     }
 
     private fun initView() {
         binding?.run {
             sqlHelper?.let {
-                memoAdapter = MemoAdapter(this@MainActivity, it, R.layout.memo_item)
+                memoAdapter = MemoAdapter(this@MainActivity, it, R.layout.memo_item, userId.toString()
+                )
             }
             listview.adapter = memoAdapter
             listview.onItemClickListener = this@MainActivity
