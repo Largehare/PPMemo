@@ -49,11 +49,11 @@ class LoginActivity : AppCompatActivity() {
         val remember = binding.checkbox
         initSQL()
         //初始化SharedPreferences文件实现记住密码功能
-        val editor:SharedPreferences.Editor?  = initSharedPreferences(remember!!,username, password)
+
 
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
-
+        val editor:SharedPreferences.Editor?  = initSharedPreferences(remember!!,username, password)
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
 
@@ -138,7 +138,7 @@ class LoginActivity : AppCompatActivity() {
 
     //----------------------------------------------------Function------------------------------------------------
     private fun rememberUserInfo(checkBox: CheckBox?,editor:SharedPreferences.Editor?,userId: String,userPwd: String) {
-        if(checkBox!!.isChecked()){
+        if(checkBox!!.isChecked){
             editor?.putString("account",userId)
             editor?.putString("password",userPwd)
             editor?.putBoolean("isChecked",true)
@@ -155,11 +155,15 @@ class LoginActivity : AppCompatActivity() {
     private fun initSharedPreferences(checkBox: CheckBox,username:EditText,password:EditText): SharedPreferences.Editor? {
         val sp = getSharedPreferences("PPMemo", MODE_PRIVATE)//获得SharedPreferences，并创建文件名为PPMemo
         val editor = sp.edit() //获得Editor对象，用于储存用户信息
+        val _username = sp.getString("account",null)
+        val _password = sp.getString("password",null)
         //如果之前记住过密码，直接先导入。
-        if(sp.getString("account",null) !=null && sp.getString("password",null) !=null){
-            username.setText(sp.getString("account",null))
-            password.setText(sp.getString("password",null))
+        if(_username !=null && _password !=null){
+
+            username.setText(_username)
+            password.setText(_password)
             checkBox.isChecked = sp.getBoolean("isChecked", false)
+            loginViewModel.loginDataChanged(_username,_password)//检查输入框状态
         }
         return editor
 
