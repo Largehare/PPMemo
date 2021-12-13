@@ -1,30 +1,30 @@
 package cn.edu.bupt.sdmda.mymemo.ui.login
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Toast
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import cn.edu.bupt.sdmda.mymemo.MainActivity
-
 import cn.edu.bupt.sdmda.mymemo.databinding.ActivityLoginBinding
-
-import cn.edu.bupt.sdmda.mymemo.R
-import java.lang.Exception
 
 class LoginActivity : AppCompatActivity() {
     private var sqlHelper: UserSQLHelper? = null
     private lateinit var loginViewModel: LoginViewModel
-private lateinit var binding: ActivityLoginBinding
+    private lateinit var binding: ActivityLoginBinding
+    @SuppressLint("Recycle")
     private fun initSQL() {
         sqlHelper = UserSQLHelper(this)
         try {
@@ -46,7 +46,11 @@ private lateinit var binding: ActivityLoginBinding
         val password = binding.password
         val login = binding.login
         val loading = binding.loading
+        val remember = binding.checkbox
         initSQL()
+        //初始化SharedPreferences文件实现记住密码功能
+        val editor:SharedPreferences.Editor?  = initSharedPreferences(remember!!,username, password)
+
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
 
@@ -71,23 +75,25 @@ private lateinit var binding: ActivityLoginBinding
             if (loginResult.error != null) {
                 showLoginFailed(loginResult.error)
             }
-            if (loginResult.success != null) {
+//            if (loginResult.success != null) {
 //                updateUiWithUser(loginResult.success)
-            }
+//            }
 //            //检查数据库
-            var queryR = sqlHelper?.readSQL()
-            var _isMatch = queryR?.run {
+            val queryR = sqlHelper?.readSQL()
+            val _isMatch = queryR?.run {
                 isMatch(this,username.text.toString(), password.text.toString())
             }
             if (_isMatch == true){
+                rememberUserInfo(remember,editor,username.text.toString(),password.text.toString())
                 startMainActivity(username.text.toString())
             }else{
-                var _isRegistered =
+                val _isRegistered =
                     queryR?.let { it1 -> addUser(it1,username.text.toString(), password.text.toString()) }
                 if (_isRegistered == true){
                     showPwdError()
                 }else{
                     showRegisterSuccess()
+                    rememberUserInfo(remember,editor,username.text.toString(),password.text.toString())
                     //跳转
                     startMainActivity(username.text.toString())
                 }
@@ -127,29 +133,61 @@ private lateinit var binding: ActivityLoginBinding
             }
         }
     }
+
+
+
+    //----------------------------------------------------Function------------------------------------------------
+    private fun rememberUserInfo(checkBox: CheckBox?,editor:SharedPreferences.Editor?,userId: String,userPwd: String) {
+        if(checkBox!!.isChecked()){
+            editor?.putString("account",userId)
+            editor?.putString("password",userPwd)
+            editor?.putBoolean("isChecked",true)
+            editor?.commit()
+        }
+        else {
+            editor?.clear()?.commit()         //之前保存的账户密码进行清空
+            //防止通过返回键再次进入登陆页面，此时登陆页面依然保留账户密码。
+            //所以销毁活动，再次进入登陆页面时，需要重新输入账号密码。
+        }
+
+    }
+
+    private fun initSharedPreferences(checkBox: CheckBox,username:EditText,password:EditText): SharedPreferences.Editor? {
+        val sp = getSharedPreferences("PPMemo", MODE_PRIVATE)//获得SharedPreferences，并创建文件名为PPMemo
+        val editor = sp.edit() //获得Editor对象，用于储存用户信息
+        //如果之前记住过密码，直接先导入。
+        if(sp.getString("account",null) !=null && sp.getString("password",null) !=null){
+            username.setText(sp.getString("account",null))
+            password.setText(sp.getString("password",null))
+            checkBox.isChecked = sp.getBoolean("isChecked", false)
+        }
+        return editor
+
+    }
+
     //数据库中没有该用户就创建
     private fun addUser(ret: MutableList<Map<String, Any>>,userId:String,userPwd:String): Boolean {
-        val _isRegistered = ret?.run {
+        val _isRegistered = ret.run {
             for(mapItem in this){
-                var _isRegistered = mapItem.containsValue(userId)
+                val _isRegistered = mapItem.containsValue(userId)
                 if (_isRegistered) return@run true
             }
             false
         }
-        if (!_isRegistered){
-            val creatTime = System.currentTimeMillis()
-            sqlHelper?.addUser(userId,userPwd,creatTime)
-            return false
+        return if (!_isRegistered){
+            val createTime = System.currentTimeMillis()
+            sqlHelper?.addUser(userId,userPwd,createTime)
+            false
         }else{
-            return true
+            true
         }
 
     }
     //判断数据库中是否有该用户和输入框密码与设置密码是否相等
     private fun isMatch(ret: MutableList<Map<String, Any>>,userId:String,userPwd:String): Boolean {
-        val _isMatch = ret?.run {
+        val _isMatch = ret.run {
             for(mapItem in this){
-                var _isRegistered = mapItem.containsValue(userId)
+                val _isRegistered = mapItem.containsValue(userId)
                 if (_isRegistered && mapItem.containsValue(userPwd)) return@run true
             }
             false
@@ -158,23 +196,14 @@ private lateinit var binding: ActivityLoginBinding
     }
     private fun startMainActivity(userId: String){
         setResult(Activity.RESULT_OK)
-        //跳转到Mainactivity
-        var intent = Intent(this,MainActivity::class.java)
+        //跳转到MainActivity
+        val intent = Intent(this,MainActivity::class.java)
         intent.putExtra("userId",userId)
         startActivity(intent)
         //Complete and destroy login activity once successful
         finish()
     }
-    private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        // TODO : initiate successful logged in experience
-        Toast.makeText(
-            applicationContext,
-            "$welcome $displayName",
-            Toast.LENGTH_LONG
-        ).show()
-    }
+
     private fun showRegisterSuccess(){
         Toast.makeText(applicationContext, "注册成功", Toast.LENGTH_LONG).show()
     }
